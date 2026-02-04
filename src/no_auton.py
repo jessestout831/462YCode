@@ -58,7 +58,7 @@ left_motor_top = Motor(Ports.PORT9, ratio, False)
 left_drivetrain_motors = MotorGroup(left_motor_front, left_motor_back, left_motor_top)
 
 intake_motor = Motor(Ports.PORT7, ratio, False)
-score_motor = Motor(Ports.PORT15, ratio, True)
+score_motor = Motor(Ports.PORT15, ratio, False)
 
 brain_inertial = Inertial(Ports.PORT17)
 
