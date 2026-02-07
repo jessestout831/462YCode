@@ -121,7 +121,7 @@ def drive_distance(distance):
     counter = 0
     time_counter = 0
     distanceInDeg = (distance / (3.25 * math.pi)) * (5.0/3.0) * 360 #dist (in) *    1 rev /  (diam * pi) in * (5 / 3) * 360 deg / 1rv
-    while counter < 150 and time_counter < 2000:
+    while counter < 150 and time_counter < 1000:
         #distance_traveled = (left_drivetrain_motors.position() * 3.0/5.0) * 10.2101761242/360.0
         lmp = left_motor_front.position()
         rmp = right_motor_front.position()
@@ -147,7 +147,7 @@ def turn_under_80_degrees(measure):
     under_80_turn_PID.previous_error = under_80_turn_PID.error
     counter = 0
     time_counter = 0
-    while counter < 150 and time_counter < 2000:
+    while counter < 150 and time_counter < 1000:
         output = under_80_turn_PID.loop_instance(brain_inertial.rotation(), measure)
         l_output_clamped = 5 if output > 5 else output
         l_output_clamped = -5 if l_output_clamped < -5 else l_output_clamped
@@ -172,7 +172,7 @@ def turn_over_80_degrees(measure):
     middle_turn_PID.previous_error = middle_turn_PID.error
     counter = 0
     time_counter = 0
-    while counter < 150 and time_counter < 2000:
+    while counter < 150 and time_counter < 1000:
         output = middle_turn_PID.loop_instance(brain_inertial.rotation(), measure)
         l_output_clamped = 8 if output > 8 else output
         l_output_clamped = -8 if l_output_clamped < -8 else l_output_clamped
@@ -197,7 +197,7 @@ def turn_over_135_degrees(measure):
     over_100_turn_PID.previous_error = under_80_turn_PID.error
     counter = 0
     time_counter = 0
-    while counter < 150 and time_counter < 2000:
+    while counter < 150 and time_counter < 1000:
         output = over_100_turn_PID.loop_instance(brain_inertial.rotation(), measure)
         l_output_clamped = 8 if output > 8 else output
         l_output_clamped = -8 if l_output_clamped < -8 else l_output_clamped
