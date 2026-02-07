@@ -133,7 +133,7 @@ def drive_distance(distance):
         right_motor_back.spin(FORWARD, right_drive_speed, VOLT)
         right_motor_top.spin(FORWARD, right_drive_speed, VOLT)
         right_motor_front.spin(FORWARD, right_drive_speed, VOLT)
-        if abs(left_drive_PID.error) <= 10 and abs(right_drive_PID.error) <= 10:
+        if abs(left_drive_PID.error) <= 20 and abs(right_drive_PID.error) <= 20:
             counter += 10
         else:
             counter = 0
@@ -240,7 +240,7 @@ def autonomous():
     drive_distance(20)
     drive_distance(8)
     turn_over_80_degrees(135)
-    drive_distance(35.5)
+    drive_distance(36.5)
     # intake_motor.spin(REVERSE, 120)
     # score_motor.spin(REVERSE, 120)
     # wait(2, SECONDS)
@@ -254,7 +254,10 @@ def autonomous():
     # wait(0.5, SECONDS)
     drive_distance(-24)
     # intake_motor.spin(FORWARD, intake_speed)
-    score_motor.spin(FORWARD, 120)
+    score_motor.spin(FORWARD, intake_speed)
+    intake_motor.spin(REVERSE, intake_speed)
+    wait(0.1, SECONDS)
+    intake_motor.spin(FORWARD, intake_speed)
 
 def user_control():
     brain.screen.clear_screen()
