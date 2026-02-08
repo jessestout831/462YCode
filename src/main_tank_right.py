@@ -84,6 +84,16 @@ while brain_inertial.is_calibrating():
 
 brain_inertial.reset_heading()
 
+def drive_to(speed, time):
+    left_motor_back.spin(FORWARD, speed, VOLT)
+    left_motor_top.spin(FORWARD, speed, VOLT)
+    left_motor_front.spin(FORWARD, speed, VOLT)
+    right_motor_back.spin(FORWARD, speed, VOLT)
+    right_motor_top.spin(FORWARD, speed, VOLT)
+    right_motor_front.spin(FORWARD, speed, VOLT)
+    wait(time, SECONDS)
+    drivetrain.stop(BRAKE)
+
 def toggle_descore():
     print("descore toggle attempt")
     global descore_state
@@ -248,16 +258,18 @@ def autonomous():
     # score_motor.stop()
     # drive_distance(-45)
     turn_under_80_degrees(180)
-    # toggle_matchloader_auton()
-    # wait(0.5, SECONDS)
-    # drive_distance(12)
-    # wait(0.5, SECONDS)
     drive_distance(-24)
     # intake_motor.spin(FORWARD, intake_speed)
     score_motor.spin(FORWARD, intake_speed)
     intake_motor.spin(REVERSE, intake_speed)
     wait(0.1, SECONDS)
     intake_motor.spin(FORWARD, intake_speed)
+    wait(2.5, SECONDS)
+    drive_distance(13)
+    turn_over_80_degrees(90)
+    drive_distance(-11)
+    turn_over_80_degrees(0)
+    drive_to(7, 0.8)
 
 def user_control():
     brain.screen.clear_screen()

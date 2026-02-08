@@ -40,8 +40,8 @@ controller = Controller()
 ratio = GearSetting.RATIO_6_1
 speed = 24
 auton_speed = 0.0625
-auton__turn_speed = 0.5
-intake_speed = 1000
+auton_turn_speed = 0.5
+intake_speed = 10
 intake_lock = False
 descore_state = False
 matchload_state = False
@@ -135,8 +135,9 @@ def drive_distance(distance):
         #distance_traveled = (left_drivetrain_motors.position() * 3.0/5.0) * 10.2101761242/360.0
         lmp = left_motor_front.position()
         rmp = right_motor_front.position()
-        left_drive_speed = left_drive_PID.loop_instance(lmp, distanceInDeg) + heading_PID.loop_instance(brain_inertial.rotation(), target_heading)
-        right_drive_speed = right_drive_PID.loop_instance(rmp, distanceInDeg) - heading_PID.loop_instance(brain_inertial.rotation(), target_heading)
+        heading_pid_value = heading_PID.loop_instance(brain_inertial.rotation(), target_heading)
+        left_drive_speed = left_drive_PID.loop_instance(lmp, distanceInDeg) + heading_pid_value
+        right_drive_speed = right_drive_PID.loop_instance(rmp, distanceInDeg) - heading_pid_value
         left_motor_back.spin(FORWARD, left_drive_speed, VOLT)
         left_motor_top.spin(FORWARD, left_drive_speed, VOLT)
         left_motor_front.spin(FORWARD, left_drive_speed, VOLT)
@@ -249,7 +250,7 @@ def autonomous():
     turn_over_80_degrees(-90)
     toggle_matchloader()
     wait(0.5, SECONDS)
-    drive_to(100, 0.4)
+    drive_to(100, 0.3)
     drive_distance(-2)
     drive_to(100, 0.25)
     drive_distance(-2)
@@ -264,31 +265,35 @@ def autonomous():
 
 def user_control():
     brain.screen.clear_screen()
-    brain.screen.print("driver control")
-    intake_motor.spin(FORWARD, intake_speed)
+    brain.screen.print("driver controla")
+    intake_motor.spin(FORWARD, intake_speed, VOLT)
     drive_distance(32)
     turn_over_80_degrees(-90)
     toggle_matchloader()
     wait(0.25, SECONDS)
-    drive_to(100, 0.4)
-    wait(1.5, SECONDS)
+    drive_to(10, 0.15)
+    drive_to(3, 2)
     drive_distance(-10)
     toggle_matchloader()
     turn_over_80_degrees(-180)
     drive_distance(27)
     turn_over_80_degrees(-270)
-    drive_distance(84)
-    intake_motor.spin(FORWARD, intake_speed)
+    toggle_matchloader()
+    drive_distance(86)
+    toggle_matchloader()
     turn_over_80_degrees(-360)
-    drive_distance(24)
+    drive_distance(22)
     turn_over_80_degrees(-270)
-    drive_distance(-10)
-    score_motor.spin(FORWARD, intake_speed)
+    drive_distance(-12)
+    intake_motor.spin(REVERSE, intake_speed, VOLT)
+    wait(0.2, SECONDS)
+    intake_motor.spin(FORWARD, intake_speed, VOLT)
+    score_motor.spin(FORWARD, intake_speed, VOLT)
     wait(2, SECONDS)
     score_motor.stop()
     toggle_matchloader()
-    drive_to(100, 0.75)
-    wait(1.5, SECONDS)
+    drive_to(10, 0.4)
+    drive_to(2, 1.5)
     toggle_descore()
     drive_distance(24)
     
