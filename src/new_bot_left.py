@@ -44,6 +44,7 @@ auton__turn_speed = 0.5
 intake_speed = 1000
 intake_lock = False
 descore_state = False
+score_state = False
 matchload_state = False
 tilt_state = False
 target_heading = 0
@@ -70,9 +71,10 @@ intake = MotorGroup(intake_motor_1, intake_motor_2)
 
 brain_inertial = Inertial(Ports.PORT17)
 
-descore = Pneumatics(brain.three_wire_port.a)
-tilt = Pneumatics(brain.three_wire_port.h)
+descore = Pneumatics(brain.three_wire_port.h)
+intake_tilt = Pneumatics(brain.three_wire_port.b)
 matchload = Pneumatics(brain.three_wire_port.d)
+score = Pneumatics(brain.three_wire_port.f)
 
 drivetrain = DriveTrain(left_drivetrain_motors, right_drivetrain_motors, 300, 320, 320, MM, 3/5)
 
@@ -87,16 +89,29 @@ while brain_inertial.is_calibrating():
 
 brain_inertial.reset_heading()
 
+def tilt():
+    global tilt_state
+    tilt_state = not tilt_state
+    if tilt_state:
+        intake_tilt.open()
+    else:
+        intake_tilt.close()
+
 def toggle_descore():
-    print("descore toggle attempt")
     global descore_state
     descore_state = not descore_state
     if descore_state:
         descore.open()
-        print("descore toggled on")
     else:
         descore.close()
-        print("descore toggled off")
+
+def toggle_score():
+    global score_state
+    score_state = not score_state
+    if score_state:
+        score.open()
+    else:
+        score.close()
 
 def toggle_matchloader_auton(): 
     global matchload_state
@@ -234,20 +249,12 @@ def toggle_intake_lock():
     global intake_lock
     intake_lock = not intake_lock
     if intake_lock:
-        intake_motor.spin(FORWARD, intake_speed)
-
-def unjam():
-    for i in range(10):
-        score_motor.spin(REVERSE, intake_speed)
-        intake_motor.spin(FORWARD, intake_speed)
-        wait(0.5, SECONDS)
-        intake_motor.spin(REVERSE, intake_speed)
-        wait(0.5, SECONDS)
+        intake.spin(FORWARD, intake_speed)
 
 def autonomous():
     brain.screen.clear_screen()
     brain.screen.print("autonomous code")
-    intake_motor.spin(FORWARD, intake_speed)
+    intake.spin(FORWARD, intake_speed)
     # turn_over_80_degrees(90)
     turn_under_80_degrees(-22)
     drive_distance(20)
@@ -266,8 +273,8 @@ def autonomous():
     # drive_distance(12)
     # wait(0.5, SECONDS)
     drive_distance(-24)
-    # intake_motor.spin(FORWARD, intake_speed)
-    score_motor.spin(FORWARD, 120)
+    # score
+    intake.spin(FORWARD, 120)
 
 def user_control():
     brain.screen.clear_screen()
@@ -312,7 +319,7 @@ controller.buttonY.pressed(toggle_descore)
 controller.buttonRight.pressed(toggle_matchloader)
 controller.buttonDown.pressed(toggle_intake_lock)
 controller.buttonL1.pressed(tilt)
-controller.buttonUp.pressed(unjam)
+controller.buttonR1.pressed(toggle_score)
 # create competition instance
 comp = Competition(user_control, autonomous)
 
