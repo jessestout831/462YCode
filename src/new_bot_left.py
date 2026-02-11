@@ -56,12 +56,12 @@ over_100_turn_PID = PID("TURN", 0.11, 0, 0.05, 2)
 middle_turn_PID = PID("TURN", 0.117, 0, 0.06, 2)
 
 right_motor_front = Motor(Ports.PORT19, ratio, False)
-right_motor_back = Motor(Ports.PORT18, ratio, True)
+right_motor_back = Motor(Ports.PORT18, ratio, False)
 right_motor_top = Motor(Ports.PORT20, ratio, False)
 right_drivetrain_motors = MotorGroup(right_motor_front, right_motor_back, right_motor_top)
 
 left_motor_front = Motor(Ports.PORT16, ratio, True)
-left_motor_back = Motor(Ports.PORT15, ratio, False)
+left_motor_back = Motor(Ports.PORT15, ratio, True)
 left_motor_top = Motor(Ports.PORT17, ratio, True)
 left_drivetrain_motors = MotorGroup(left_motor_front, left_motor_back, left_motor_top)
 
@@ -88,6 +88,18 @@ while brain_inertial.is_calibrating():
     wait(50, MSEC)
 
 brain_inertial.reset_heading()
+
+
+def drive_to(speed, time):
+    left_motor_back.spin(FORWARD, speed, VOLT)
+    left_motor_top.spin(FORWARD, speed, VOLT)
+    left_motor_front.spin(FORWARD, speed, VOLT)
+    right_motor_back.spin(FORWARD, speed, VOLT)
+    right_motor_top.spin(FORWARD, speed, VOLT)
+    right_motor_front.spin(FORWARD, speed, VOLT)
+    wait(time, SECONDS)
+    drivetrain.stop(BRAKE)
+
 
 def tilt():
     global tilt_state
@@ -255,26 +267,32 @@ def autonomous():
     brain.screen.clear_screen()
     brain.screen.print("autonomous code")
     intake.spin(FORWARD, intake_speed)
-    # turn_over_80_degrees(90)
-    turn_under_80_degrees(-22)
     drive_distance(20)
-    drive_distance(8)
-    turn_over_80_degrees(-135)
-    drive_distance(36.5)
-    # intake_motor.spin(REVERSE, 120)
-    # score_motor.spin(REVERSE, 120)
-    # wait(2, SECONDS)
-    # intake_motor.spin(FORWARD, intake_speed)
-    # score_motor.stop()
-    # drive_distance(-45)
-    turn_under_80_degrees(-180)
-    # toggle_matchloader_auton()
-    # wait(0.5, SECONDS)
-    # drive_distance(12)
-    # wait(0.5, SECONDS)
-    drive_distance(-24)
-    # score
-    intake.spin(FORWARD, 120)
+    intake.stop
+    # turn_under_80_degrees(-25)
+    # turn_under_80_degrees(-22)
+    # drive_distance(20)
+    # drive_distance(8)
+    # turn_over_80_degrees(-135)
+    # drive_distance(-13)
+    # toggle_score()
+    # wait(1, SECONDS)
+    # toggle_score()
+    # drive_distance(49.5)
+    # turn_under_80_degrees(-180)
+    # drive_distance(-24)
+    # tilt()
+    # toggle_score()
+    # intake.spin(REVERSE, intake_speed)
+    # wait(0.1, SECONDS)
+    # intake.spin(FORWARD, intake_speed)
+    # wait(2.5, SECONDS)
+    # toggle_score()
+    # drive_distance(13)
+    # turn_over_80_degrees(-90)
+    # drive_distance(-11.5)
+    # turn_over_80_degrees(-180)
+    # drive_to(-7, 0.8)
 
 def user_control():
     brain.screen.clear_screen()
