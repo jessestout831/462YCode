@@ -48,12 +48,12 @@ score_state = False
 matchload_state = False
 tilt_state = False
 target_heading = 0
-left_drive_PID = PID("LEFT", 0.03, 0.0016, 0.125, 20)
-right_drive_PID = PID("RIGHT", 0.025, 0.0016, 0.125, 20)
-heading_PID = PID("HEADING", 0, 0, 0, 25)
-under_80_turn_PID = PID("TURN", 0.156, 0.0005, 0, 2)
-over_100_turn_PID = PID("TURN", 0.11, 0, 0.05, 2)
-middle_turn_PID = PID("TURN", 0.117, 0, 0.06, 2)
+left_drive_PID = PID("LEFT", 0.012, 0.006, 0.017, 25)
+right_drive_PID = PID("RIGHT", 0.012, 0.006, 0.017, 25)
+heading_PID = PID("HEADING", 0.08, 0, 0, 25)
+under_80_turn_PID = PID("TURN", 0.22, 0, 0, 2)
+over_100_turn_PID = PID("TURN", 0.1, 0, 0.09, 2)
+middle_turn_PID = PID("TURN", 0.1, 0, 0.09, 2)
 
 right_motor_front = Motor(Ports.PORT19, ratio, False)
 right_motor_back = Motor(Ports.PORT18, ratio, False)
@@ -69,7 +69,7 @@ intake_motor_1 = Motor(Ports.PORT7, ratio, False)
 intake_motor_2 = Motor(Ports.PORT6, ratio, False)
 intake = MotorGroup(intake_motor_1, intake_motor_2)
 
-brain_inertial = Inertial(Ports.PORT17)
+brain_inertial = Inertial(Ports.PORT12)
 
 descore = Pneumatics(brain.three_wire_port.h)
 intake_tilt = Pneumatics(brain.three_wire_port.b)
@@ -158,20 +158,31 @@ def drive_distance(distance):
     right_drive_PID.previous_error = right_drive_PID.error
     counter = 0
     time_counter = 0
-    distanceInDeg = (distance / (3.25 * math.pi)) * (5.0/3.0) * 360 #dist (in) *    1 rev /  (diam * pi) in * (5 / 3) * 360 deg / 1rv
+    distanceInDeg = (distance / (2.75 * math.pi)) * (4.0/3.0) * 360 #dist (in) *    1 rev /  (diam * pi) in * (5 / 3) * 360 deg / 1rv
+    for i in range(5, 56, 10):
+        left_drive_speed = 12 * (i / 100)
+        right_drive_speed = 12 * (i / 100)
+        left_motor_back.spin(FORWARD, left_drive_speed, VOLT)
+        right_motor_back.spin(FORWARD, right_drive_speed, VOLT)
+        left_motor_top.spin(FORWARD, left_drive_speed, VOLT)
+        right_motor_top.spin(FORWARD, right_drive_speed, VOLT)
+        left_motor_front.spin(FORWARD, left_drive_speed, VOLT)
+        right_motor_front.spin(FORWARD, right_drive_speed, VOLT)
+        wait(10, MSEC)
     while counter < 150 and time_counter < 2000:
         #distance_traveled = (left_drivetrain_motors.position() * 3.0/5.0) * 10.2101761242/360.0
         lmp = left_motor_front.position()
         rmp = right_motor_front.position()
-        left_drive_speed = left_drive_PID.loop_instance(lmp, distanceInDeg) + heading_PID.loop_instance(brain_inertial.rotation(), target_heading)
-        right_drive_speed = right_drive_PID.loop_instance(rmp, distanceInDeg) - heading_PID.loop_instance(brain_inertial.rotation(), target_heading)
+        heading_value = heading_PID.loop_instance(brain_inertial.rotation(), target_heading)
+        left_drive_speed = left_drive_PID.loop_instance(lmp, distanceInDeg) + heading_value
+        right_drive_speed = right_drive_PID.loop_instance(rmp, distanceInDeg) - heading_value
         left_drive_speed = min(10, left_drive_speed)
         right_drive_speed = min(10, right_drive_speed)
         left_motor_back.spin(FORWARD, left_drive_speed, VOLT)
-        left_motor_top.spin(FORWARD, left_drive_speed, VOLT)
-        left_motor_front.spin(FORWARD, left_drive_speed, VOLT)
         right_motor_back.spin(FORWARD, right_drive_speed, VOLT)
+        left_motor_top.spin(FORWARD, left_drive_speed, VOLT)
         right_motor_top.spin(FORWARD, right_drive_speed, VOLT)
+        left_motor_front.spin(FORWARD, left_drive_speed, VOLT)
         right_motor_front.spin(FORWARD, right_drive_speed, VOLT)
         if abs(left_drive_PID.error) <= 20 and abs(right_drive_PID.error) <= 20:
             counter += 10
@@ -189,10 +200,9 @@ def turn_under_80_degrees(measure):
     time_counter = 0
     while counter < 150 and time_counter < 2000:
         output = under_80_turn_PID.loop_instance(brain_inertial.rotation(), measure)
-        l_output_clamped = 5 if output > 5 else output
-        l_output_clamped = -5 if l_output_clamped < -5 else l_output_clamped
-        left_drive_speed =  l_output_clamped
-        right_drive_speed = -l_output_clamped
+        print("output" + str(output))
+        left_drive_speed =  output
+        right_drive_speed = -output
         left_motor_back.spin(FORWARD, left_drive_speed, VOLT)
         left_motor_top.spin(FORWARD, left_drive_speed, VOLT)
         left_motor_front.spin(FORWARD, left_drive_speed, VOLT)
@@ -267,32 +277,30 @@ def autonomous():
     brain.screen.clear_screen()
     brain.screen.print("autonomous code")
     intake.spin(FORWARD, intake_speed)
+    turn_under_80_degrees(-25)
+    turn_under_80_degrees(-22)
     drive_distance(20)
-    intake.stop
-    # turn_under_80_degrees(-25)
-    # turn_under_80_degrees(-22)
-    # drive_distance(20)
-    # drive_distance(8)
-    # turn_over_80_degrees(-135)
-    # drive_distance(-13)
-    # toggle_score()
-    # wait(1, SECONDS)
-    # toggle_score()
-    # drive_distance(49.5)
-    # turn_under_80_degrees(-180)
-    # drive_distance(-24)
-    # tilt()
-    # toggle_score()
-    # intake.spin(REVERSE, intake_speed)
-    # wait(0.1, SECONDS)
-    # intake.spin(FORWARD, intake_speed)
-    # wait(2.5, SECONDS)
-    # toggle_score()
-    # drive_distance(13)
-    # turn_over_80_degrees(-90)
-    # drive_distance(-11.5)
-    # turn_over_80_degrees(-180)
-    # drive_to(-7, 0.8)
+    drive_distance(8)
+    turn_over_80_degrees(-135)
+    drive_distance(-13)
+    toggle_score()
+    wait(1, SECONDS)
+    toggle_score()
+    drive_distance(49.5)
+    turn_under_80_degrees(-180)
+    drive_distance(-24)
+    tilt()
+    toggle_score()
+    intake.spin(REVERSE, intake_speed)
+    wait(0.1, SECONDS)
+    intake.spin(FORWARD, intake_speed)
+    wait(2.5, SECONDS)
+    toggle_score()
+    drive_distance(13)
+    turn_over_80_degrees(-90)
+    drive_distance(-11.5)
+    turn_over_80_degrees(-180)
+    drive_to(-7, 0.8)
 
 def user_control():
     brain.screen.clear_screen()
