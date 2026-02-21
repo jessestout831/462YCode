@@ -47,7 +47,6 @@ descore_state = False
 score_state = False
 matchload_state = False
 tilt_state = False
-third_state = False
 target_heading = 0
 left_drive_PID = PID("LEFT", 0.012, 0.006, 0.017, 25)
 right_drive_PID = PID("RIGHT", 0.012, 0.006, 0.017, 25)
@@ -75,7 +74,6 @@ brain_inertial = Inertial(Ports.PORT12)
 descore = Pneumatics(brain.three_wire_port.h)
 intake_tilt = Pneumatics(brain.three_wire_port.b)
 matchload = Pneumatics(brain.three_wire_port.d)
-tri_state = Pneumatics(brain.three_wire_port.g)
 # score = Pneumatics(brain.three_wire_port.f)
 
 drivetrain = DriveTrain(left_drivetrain_motors, right_drivetrain_motors, 300, 320, 320, MM, 3/5)
@@ -111,15 +109,6 @@ def tilt():
     else:
         intake_tilt.close()
 
-
-def toggle_tri_state():
-    global third_state
-    third_state = not third_state
-    if third_state:
-        tri_state.open()
-    else:
-        tri_state.close()
-
 def toggle_descore():
     global descore_state
     descore_state = not descore_state
@@ -151,6 +140,14 @@ def toggle_matchloader():
         matchload.open()
     else:
         matchload.close()
+
+def toggle_tilt():
+    global tilt_state
+    tilt_state = not tilt_state
+    if tilt_state:
+        tilt.open()
+    else:
+        tilt.close()
 
 def drive_distance(distance):
     left_motor_front.reset_position()
@@ -295,71 +292,50 @@ def autonomous():
     brain.screen.clear_screen()
     brain.screen.print("autonomous code")
     intake.spin(FORWARD, intake_speed)
-    turn_under_80_degrees(-13)
-    drive_distance(18)
-    drive_distance(10)
-    turn_over_80_degrees(-135)
-    drive_distance(32.5)
-    turn_under_80_degrees(-180)
-    tilt()
-    wait(0.25, SECONDS)
-    drive_distance(-19.5)
-    score_motor.spin(FORWARD, intake_speed)
-    intake.spin(REVERSE, intake_speed)
-    wait(0.1, SECONDS)
-    intake.spin(FORWARD, intake_speed)
-    wait(2, SECONDS)
-    score_motor.stop()
-    drive_distance(13)
-    turn_over_80_degrees(-90)
-    drive_distance(-11.5)
-    turn_over_80_degrees(0)
-    drive_to(7, 0.8)
+    drive_distance(-20)
+    drive_distance(60)
 
 def user_control():
     brain.screen.clear_screen()
     brain.screen.print("driver control")
-    while True:
-        wait(20, MSEC)
-        left_motor_back.spin(FORWARD, controller.axis3.position() * 0.12, VOLT)
-        left_motor_top.spin(FORWARD, controller.axis3.position() * 0.12, VOLT)
-        left_motor_front.spin(FORWARD, controller.axis3.position() * 0.12, VOLT)
-        right_motor_back.spin(FORWARD, controller.axis2.position() * 0.12, VOLT)
-        right_motor_top.spin(FORWARD, controller.axis2.position() * 0.12, VOLT)
-        right_motor_front.spin(FORWARD, controller.axis2.position() * 0.12, VOLT)
-        
-        # if controller.buttonDown.pressing():
-        #     intake_lock = True
-        #     intake_motor.spin(FORWARD, intake_speed)
-        # elif controller.buttonUp.pressing():
-        #     intake_lock = False
-
-        if controller.buttonR2.pressing():
-            intake.spin(FORWARD, intake_speed)
-        elif controller.buttonL2.pressing():
-            intake.spin(REVERSE, intake_speed)
-        elif not intake_lock:
-            intake.stop()
-
-        if controller.buttonR1.pressing():
-            score_motor.spin(FORWARD, intake_speed)
-        elif controller.buttonL1.pressing():
-            score_motor.spin(REVERSE, intake_speed)
-        else:
-            score_motor.stop()
-
-        # if abs(controller.axis1.position()) == 100:
-        #     controller.rumble("-")
-
-        # if abs(controller.axis3.position()) == 100:
-        #     controller.rumble(".")        
+    intake.spin(FORWARD, intake_speed, VOLT)
+    drive_distance(32)
+    turn_over_80_degrees(-90)
+    toggle_matchloader()
+    wait(0.25, SECONDS)
+    drive_to(10, 0.15)
+    drive_to(3, 2)
+    drive_distance(-10)
+    toggle_matchloader()
+    turn_over_80_degrees(-180)
+    drive_distance(27)
+    turn_over_80_degrees(-270)
+    toggle_matchloader()
+    drive_distance(86)
+    toggle_matchloader()
+    turn_over_80_degrees(-360)
+    drive_distance(22)
+    turn_over_80_degrees(-270)
+    toggle_tilt()
+    drive_distance(-12)
+    intake.spin(REVERSE, intake_speed, VOLT)
+    wait(0.2, SECONDS)
+    intake.spin(FORWARD, intake_speed, VOLT)
+    score_motor.spin(FORWARD, intake_speed, VOLT)
+    wait(2, SECONDS)
+    score_motor.stop()
+    toggle_tilt()
+    toggle_matchloader()
+    drive_to(10, 0.4)
+    drive_to(2, 1.5)
+    toggle_descore()
+    drive_distance(24)  
         
         
 controller.buttonY.pressed(toggle_descore)
 controller.buttonRight.pressed(toggle_matchloader)
-# controller.buttonDown.pressed(toggle_intake_lock)
-controller.buttonDown.pressed(tilt)
-controller.buttonB.pressed(toggle_tri_state)
+controller.buttonDown.pressed(toggle_intake_lock)
+controller.buttonB.pressed(tilt)
 # controller.buttonR1.pressed(toggle_score)
 # create competition instance
 comp = Competition(user_control, autonomous)
